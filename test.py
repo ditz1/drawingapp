@@ -4,13 +4,22 @@ import pygame
 import ctypes
 
 # Increas Dots Per inch so it looks sharper
-ctypes.windll.shcore.SetProcessDpiAwareness(True)
+###ONLY SET TRUE IF ON WINDOWS
+win10 = False
 
 # Pygame Configuration
+ifwin = input("are you on windows? [y/n]").strip().lower()
+
+if (ifwin == 'y'): 
+	win10 = True
+
+if (win10):
+	ctypes.windll.shcore.SetProcessDpiAwareness(win10)
+
 pygame.init()
-fps = 300
+fps = 500
 fpsClock = pygame.time.Clock()
-width, height = 640, 480
+width, height = 1920 , 1080
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 font = pygame.font.SysFont('Arial', 20)
@@ -21,14 +30,14 @@ font = pygame.font.SysFont('Arial', 20)
 objects = []
 
 # Initial color
-drawColor = [0, 0, 0]
+drawColor = [255, 255, 255]
 
 # Initial brush size
-brushSize = 30
+brushSize = 20
 brushSizeSteps = 3
 
 # Drawing Area Size
-canvasSize = [800, 800]
+canvasSize = [2000, 2000]
 
 # Button Class:
 class Button():
@@ -41,7 +50,7 @@ class Button():
         self.onePress = onePress
 
         self.fillColors = {
-            'normal': '#ffffff',
+            'normal': '#aaaaaa',
             'hover': '#666666',
             'pressed': '#333333',
         }
@@ -103,8 +112,8 @@ def save():
     pygame.image.save(canvas, "canvas.png")
 
 # Button Variables.
-buttonWidth = 120
-buttonHeight = 35
+buttonWidth = 240
+buttonHeight = 70
 
 # Buttons and their respective functions.
 buttons = [
@@ -124,7 +133,7 @@ for index, buttonName in enumerate(buttons):
 
 # Canvas
 canvas = pygame.Surface(canvasSize)
-canvas.fill((255, 255, 255))
+canvas.fill((2, 4, 24))
 
 # Game loop.
 while True:
@@ -133,6 +142,10 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r and (pygame.key.get_mods() & pygame.KMOD_CTRL):
+                canvas.fill((2,4,24))
 
     # Drawing the Buttons
     for object in objects:
