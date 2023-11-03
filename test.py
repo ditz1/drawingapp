@@ -37,10 +37,10 @@ brushSize = 20
 brushSizeSteps = 3
 
 # Drawing Area Size
-canvasSize = [2000, 2000]
+canvasSize = [2000,1000]
 
 # Button Class:
-class Button():
+class Button:
     def __init__(self, x, y, width, height, buttonText='Button', onclickFunction=None, onePress=False):
         self.x = x
         self.y = y
@@ -169,7 +169,7 @@ while True:
     pygame.draw.circle(
         screen,
         drawColor,
-        [100, 100],
+        [30, 30],
         brushSize,
     )
 
