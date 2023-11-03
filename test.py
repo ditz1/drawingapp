@@ -167,6 +167,11 @@ while True:
             if event.key == pygame.K_r and (
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
                 canvas.fill((2, 4, 24))
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_d and (
+                    pygame.key.get_mods() & pygame.KMOD_CTRL):
+                pygame.quit()
+                sys.exit()
 
     x, y = screen.get_size()
     canvas_offset_y = top_padding + buttonHeight + 10
