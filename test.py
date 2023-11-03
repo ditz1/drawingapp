@@ -5,19 +5,19 @@ import ctypes
 
 # Increas Dots Per inch so it looks sharper
 # ONLY SET TRUE IF ON WINDOWS
-win10 = False
+win10 = 0
 
 # Pygame Configuration
 ifwin = input("are you on windows? [y/n]").strip().lower()
 
 if (ifwin == 'y'):
-    win10 = True
+    win10 = 1
 
 if (win10):
     ctypes.windll.shcore.SetProcessDpiAwareness(win10)
 
 pygame.init()
-fps = 500
+fps = 60
 fpsClock = pygame.time.Clock()
 width, height = 1920, 900
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
@@ -33,8 +33,9 @@ objects = []
 drawColor = [255, 255, 255]
 
 # Initial brush size
-brushSize = 20
-brushSizeSteps = 3
+BRUSH_SIZE_DEFAULT = 10
+brushSize = 10
+brushSizeSteps = 5
 
 # Drawing Area Size
 canvasSize = [2000, 1000]
@@ -103,21 +104,46 @@ class Button:
 
 
 # Handler Functions
-
+last_color = ""
+current_color = ""
 # Changing the Color
+
+
 def changeColor(color):
-    global drawColor
+    global drawColor, last_color, current_color, brushSize
     drawColor = color
+
+    if current_color == "":
+        current_color = color
+    else:
+        last_color = current_color
+        current_color = color
+
+    print("last_color: ", last_color)
+    print("current_color: ", current_color)
+
+    if last_color != [2, 4, 0] and current_color == ([2, 4, 0]):
+        print("switched to eraser")
+        brushSize = brushSize * 3
+    if last_color == [2, 4, 0] and current_color == [2, 4, 0]:
+        print("stayed on eraser")
+    if last_color == [2, 4, 0] and current_color != [2, 4, 0]:
+        print("switched to color")
+        brushSize = BRUSH_SIZE_DEFAULT
+
+    print(brushSize)
 
 # Changing the Brush Size
 
 
 def changebrushSize(dir):
-    global brushSize
+    global brushSize, last_color, current_color
+
     if dir == 'greater':
         brushSize += brushSizeSteps
     else:
         brushSize -= brushSizeSteps
+
 
 # Save the surface to the Disk
 
@@ -137,7 +163,7 @@ buttons = [
     ['White', lambda: changeColor([255, 255, 255])],
     ['Blue', lambda: changeColor([0, 0, 255])],
     ['Green', lambda: changeColor([0, 255, 0])],
-    ['Eraser', lambda: changeColor([2, 4, 24])],  # nasty hack
+    ['Eraser', lambda: changeColor([2, 4, 0])],  # nasty hack
     ['Brush Larger', lambda: changebrushSize('greater')],
     ['Brush Smaller', lambda: changebrushSize('smaller')],
     ['Save', save],
@@ -154,7 +180,9 @@ for index, buttonName in enumerate(buttons):
 
 # Canvas
 canvas = pygame.Surface(canvasSize)
-canvas.fill((2, 4, 24))
+canvas.fill((2, 4, 0))
+
+last_pos = None
 
 # Game loop.
 while True:
@@ -168,7 +196,7 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r and (
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
-                canvas.fill((2, 4, 24))
+                canvas.fill((2, 4, 0))
 
         # clean exit
         if event.type == pygame.KEYDOWN:
@@ -176,6 +204,9 @@ while True:
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
                 pygame.quit()
                 sys.exit()
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            last_pos = None
 
     x, y = screen.get_size()
     canvas_offset_y = top_padding + buttonHeight + 10
@@ -191,19 +222,37 @@ while True:
     # canvas_y = y/2 - canvasSize[1]/2 + max(buttonHeight, brushSize)
     screen.blit(canvas, (canvas_x, canvas_y))
 
+    def draw_smooth_line(surface, start_pos, end_pos, color, width):
+        x1, y1 = start_pos
+        x2, y2 = end_pos
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = max(abs(dx), abs(dy))
+
+        for i in range(int(distance)):
+            x = x1 + (dx * i) / distance
+            y = y1 + (dy * i) / distance
+            pygame.draw.circle(surface, color, (int(x), int(y)), width)
+
     if pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
+        current_pos = (mx, my)
         # Calculate Position on the Canvas
         if my > canvas_y:
-            dx = mx - canvas_x
-            dy = my - canvas_y
-            pygame.draw.circle(
-                canvas,
-                drawColor,
-                [dx, dy],
-                brushSize,
-            )
+            canvas_pos = (mx - canvas_x, my - canvas_y)
+            if last_pos:
+                draw_smooth_line(
+                    canvas,
+                    last_pos,
+                    canvas_pos,
+                    drawColor,
+                    brushSize * 2,
+                )
+            last_pos = canvas_pos
+        else:
+            last_pos = None
     # Reference Dot
+    # last_pos = None
     pygame.draw.circle(
         screen,
         drawColor,
