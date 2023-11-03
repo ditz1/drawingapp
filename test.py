@@ -123,7 +123,8 @@ def changebrushSize(dir):
 
 
 def save():
-    pygame.image.save(canvas, "canvas.png")
+    filename = input("what would you like to name your file:\n")
+    pygame.image.save(canvas, f'{filename}.png')
 
 
 # Button Variables.
@@ -163,10 +164,13 @@ while True:
             pygame.quit()
             sys.exit()
 
+        # refresh canvas
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r and (
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
                 canvas.fill((2, 4, 24))
+
+        # clean exit
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_d and (
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
