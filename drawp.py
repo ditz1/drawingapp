@@ -17,12 +17,12 @@ if (win10):
     ctypes.windll.shcore.SetProcessDpiAwareness(win10)
 
 pygame.init()
-fps = 60
+fps = 144
 fpsClock = pygame.time.Clock()
 width, height = 1920, 900
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
-font = pygame.font.SysFont('Arial', 20)
+font = pygame.font.SysFont('Arial', 14)
 
 # Variables
 
@@ -39,7 +39,7 @@ brushSizeSteps = 5
 
 # Drawing Area Size
 canvasSize = [2000, 1000]
-
+DEFAULT_CANVAS = [2, 4, 0]
 # Button Class:
 
 
@@ -153,8 +153,43 @@ def save():
     pygame.image.save(canvas, f'{filename}.png')
 
 
+def some_func():
+    global brushSize, BRUSH_SIZE_DEFAULT
+    brushSize = BRUSH_SIZE_DEFAULT
+    print("reset brush")
+
+
+current_canvas = DEFAULT_CANVAS
+
+
+def refresh():
+    global current_canvas
+    canvas.fill((current_canvas))
+
+
+canvas_invert = 0
+light_canvas = [250, 243, 238]
+dark_canvas = [2, 4, 0]
+
+
+def invert_canvas():
+    global canvas_invert, light_canvas, dark_canvas, current_canvas
+    i = canvas_invert
+    if i == 0:
+        canvas.fill(light_canvas)
+        canvas_invert = 1
+        print("canvas flipped to white")
+        current_canvas = light_canvas
+
+    elif i == 1:
+        canvas.fill(dark_canvas)
+        canvas_invert = 0
+        print("canvas flipped to black")
+        current_canvas = dark_canvas
+
+
 # Button Variables.
-buttonWidth = 150
+buttonWidth = 130
 buttonHeight = 50
 
 # Buttons and their respective functions.
@@ -162,11 +197,15 @@ buttons = [
     ['Black', lambda: changeColor([0, 0, 0])],
     ['White', lambda: changeColor([255, 255, 255])],
     ['Blue', lambda: changeColor([0, 0, 255])],
+    ['Red', lambda: changeColor([255, 0, 0])],
     ['Green', lambda: changeColor([0, 255, 0])],
-    ['Eraser', lambda: changeColor([2, 4, 0])],  # nasty hack
+    ['Eraser', lambda: changeColor(current_canvas)],  # nasty hack
     ['Brush Larger', lambda: changebrushSize('greater')],
     ['Brush Smaller', lambda: changebrushSize('smaller')],
     ['Save', save],
+    ['Refresh', refresh],
+    ['Light/Dark', invert_canvas],
+    ['Current Brush: ', some_func],
 
 ]
 
@@ -196,7 +235,24 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r and (
                     pygame.key.get_mods() & pygame.KMOD_CTRL):
-                canvas.fill((2, 4, 0))
+                canvas.fill(current_canvas)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                drawColor = [0, 0, 0]
+            if event.key == pygame.K_2:
+                drawColor = [255, 255, 255]
+            if event.key == pygame.K_3:
+                drawColor = [0, 0, 255]
+            if event.key == pygame.K_4:
+                drawColor = [255, 0, 0]
+            if event.key == pygame.K_5:
+                drawColor = [0, 255, 0]
+
+            if event.key == pygame.K_EQUALS:
+                changebrushSize('greater')
+            if event.key == pygame.K_MINUS:
+                changebrushSize('smaller')
 
         # clean exit
         if event.type == pygame.KEYDOWN:
@@ -246,7 +302,7 @@ while True:
                     last_pos,
                     canvas_pos,
                     drawColor,
-                    brushSize * 2,
+                    brushSize,
                 )
             last_pos = canvas_pos
         else:
@@ -256,7 +312,7 @@ while True:
     pygame.draw.circle(
         screen,
         drawColor,
-        [1840, 40],
+        [1790, 90],
         brushSize,
     )
 
